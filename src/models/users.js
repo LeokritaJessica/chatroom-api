@@ -8,15 +8,16 @@ const userSchema = new Schema(
     username: {
       type: String,
       required: ["Username is required", true],
-      minlength: 3,
       maxlength: 255,
     },
-    rooms: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: Rooms,
-      },
-    ],
+    socketId: {
+      type: String,
+    },
+    roomId: {
+      type: String,
+      required: ["roomId is required", true],
+      maxlength: 255,
+    },
     createdAt: {
       type: Date,
       default: Date.now,

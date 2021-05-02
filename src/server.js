@@ -3,8 +3,6 @@ const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 
-//import database
-
 //express
 const app = express();
 

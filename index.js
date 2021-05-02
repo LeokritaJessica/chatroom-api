@@ -5,9 +5,17 @@ const socketio = require("socket.io");
 //import server
 const server = require("./src/server");
 
+//import database
+const db = require("./src/config/database");
+
 //import utils
 const formatMessage = require("./src/utils/message");
-const { userJoin, getCurrentUser, userLeave } = require("./src/utils/user");
+const {
+  userJoin,
+  getCurrentUser,
+  userLeave,
+  userValidate,
+} = require("./src/services/users");
 
 //dotenv
 const { PORT, NODE_ENV } = process.env;
@@ -29,8 +37,8 @@ const botName = "ChatroomBot";
 //run when client connects
 io.on("connection", (socket) => {
   //Join room
-  socket.on("joinRoom", ({ username, roomId }) => {
-    const user = userJoin(socket.id, username, roomId);
+  socket.on("joinRoom", async ({ username, roomId }) => {
+    const user = await userJoin(socket.id, username, roomId);
 
     socket.join(user.roomId);
 
@@ -47,8 +55,8 @@ io.on("connection", (socket) => {
   });
 
   //Exit rooms
-  socket.on("exitRoom", () => {
-    const user = userLeave(socket.id);
+  socket.on("exitRoom", async () => {
+    const user = await userLeave(socket.id);
 
     if (user) {
       io.to(user.roomId).emit(
@@ -58,16 +66,23 @@ io.on("connection", (socket) => {
     }
   });
 
+  //Validate
+  socket.on("validation", async ({ username, roomId }) => {
+    const validated = await userValidate(username, roomId);
+
+    socket.emit("validated", validated);
+  });
+
   //Listen for ChatMessage
-  socket.on("chatMessage", (msg) => {
-    const user = getCurrentUser(socket.id);
+  socket.on("chatMessage", async (msg) => {
+    const user = await getCurrentUser(socket.id);
 
     io.to(user.roomId).emit("message", formatMessage(user.username, msg));
   });
 
   //Runs when client disconnects
-  socket.on("disconnect", () => {
-    const user = userLeave(socket.id);
+  socket.on("disconnect", async () => {
+    const user = await userLeave(socket.id);
 
     if (user) {
       io.to(user.roomId).emit(
