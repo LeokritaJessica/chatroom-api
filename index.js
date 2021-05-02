@@ -1,14 +1,14 @@
-//Import dotenv
+//import dependencies
 require("dotenv").config();
+const express = require("express");
+const morgan = require("morgan");
+const cors = require("cors");
 const socketio = require("socket.io");
-
-//import server
-const server = require("./src/server");
 
 //import database
 const db = require("./src/config/database");
 
-//import utils
+//import data
 const formatMessage = require("./src/utils/message");
 const {
   userJoin,
@@ -17,15 +17,24 @@ const {
   userValidate,
 } = require("./src/services/users");
 
+//express
+const app = express();
+
+//morgan
+app.use(morgan("dev"));
+
+//cors
+app.use(cors());
+
 //dotenv
 const { PORT, NODE_ENV } = process.env;
 
 //start server
-const httpServer = server.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is running http://localhost:${PORT} and use ${NODE_ENV}`);
 });
 
-const io = socketio(httpServer, {
+const io = socketio(server, {
   cors: {
     origin: "*",
     credentials: true,
@@ -94,4 +103,4 @@ io.on("connection", (socket) => {
 });
 
 //module exports
-module.exports = server;
+module.exports = app;
