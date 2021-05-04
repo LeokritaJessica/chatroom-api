@@ -4,8 +4,12 @@ const userModel = require("../models/users");
 //module export
 module.exports = {
   userValidate: async (username, roomId) => {
-    const findUser = await userModel.findOne({ username, roomId });
-    return !findUser
+    const name = `^${username}$`;
+    const findUser = await userModel.findOne({
+      username: { $regex: name, $options: "i" },
+      roomId,
+    });
+    return !findUser;
   },
   userJoin: async (socketId, username, roomId) => {
     const userData = { socketId, username, roomId };
